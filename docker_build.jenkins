@@ -12,12 +12,29 @@ pipeline {
         timestamps()
     }
     stages {
+	stage("dockerhub login") {
+            steps {
+                echo " ============== docker login =================="
+		withCredentials([usernamePassword(credentialsId: 'dockerhub_windsochi', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+		sh '''
+		docker login -u $USERNAME -p $PASSWORD
+		'''
+            }
+        }
         stage("create docker image") {
             steps {
                 echo " ============== start building image =================="
                 dir ('docker/toolbox') {
                 sh 'docker build -t windsochi/toolbox:latest . '
                 }
+            }
+        }
+	stage("docker push") {
+            steps {
+                echo " ============== start pushing image =================="
+                sh '''
+                docker push windsochi/toolbox:latest
+                '''
             }
         }
     }
